@@ -11,7 +11,7 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 
-data class DownloadQuery(val url: String, val appid: String)
+data class DownloadQuery(val url: String, val appid: String, val isFree: Boolean)
 
 data class AuthConfig(val email: String, val aas_token: String)
 
@@ -19,6 +19,10 @@ fun get_download_query(appid: String, authData: AuthData): DownloadQuery? {
     var url: String = ""
     try {
         val app = AppDetailsHelper(authData).getAppByPackageName(appid)
+        if (!app.isFree) {
+            return DownloadQuery("", appid, false)
+        }
+
         val files =
                 PurchaseHelper(authData).purchase(app.packageName, app.versionCode, app.offerType)
 
@@ -29,12 +33,13 @@ fun get_download_query(appid: String, authData: AuthData): DownloadQuery? {
             }
         }
     } catch (e: Exception) {
+        println("ERROR " + e.toString())
         return null
     }
 
     return when (url) {
         "" -> null
-        else -> DownloadQuery(url, appid)
+        else -> DownloadQuery(url, appid, true)
     }
 }
 
@@ -113,6 +118,9 @@ fun main(args: Array<String>) {
         if (query == null) {
             log("NOTFOUND $id")
             println("Could not found $id")
+        } else if (!query.isFree) {
+            log("NOTFREE $id")
+            println("$id is not free")
         } else {
             download_from(query, output_path)
         }
