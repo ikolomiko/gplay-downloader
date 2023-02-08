@@ -15,7 +15,7 @@ data class DownloadQuery(val url: String, val appId: String, val isFree: Boolean
 
 data class AuthConfig(val email: String, val aasToken: String)
 
-fun getDownloadQuery(appId: String, authData: AuthData): DownloadQuery? {
+fun getDownloadQuery(appId: String, authData: AuthData, log: Logger): DownloadQuery? {
     var url: String = ""
     try {
         val app = AppDetailsHelper(authData).getAppByPackageName(appId)
@@ -29,11 +29,12 @@ fun getDownloadQuery(appId: String, authData: AuthData): DownloadQuery? {
         for (file in files) {
             if (file.name.startsWith(appId)) {
                 url = file.url
-                println(file.name)
+                println("Chosen AppId: " + file.name)
+                break
             }
         }
     } catch (e: Exception) {
-        println("ERROR " + e.toString())
+        log.dqError("getDownloadQuery error at AppId $appId " + e.toString())
         return null
     }
 
@@ -84,11 +85,9 @@ fun downloadFrom(query: DownloadQuery, outputPath: String) {
     URL(query.url).openStream().use { Files.copy(it, Paths.get(path)) }
 }
 
-fun log(text: String) {
-    File("log.txt").appendText(text + "\n")
-}
-
 fun main(args: Array<String>) {
+    val log = Logger(saveToFile = true, printToScreen = true, coloredOutput = true)
+
     if (args.size != 2) {
         println("usage: gplay-downloader <appids file> <output path>")
         return
@@ -101,30 +100,38 @@ fun main(args: Array<String>) {
     // Read app ids
     val appids = readAppIds(args[0])
 
+    log.status("=====Initialized=====")
+
     // Read auth configuration and login
     val (email, aasToken) = readAuthConfig()
     val authData = AuthHelper.build(email, aasToken)
 
+    log.status("Logged in")
+
     // Download each app
     val len = appids.size
     appids.forEachIndexed { index, id ->
-        println("Getting $index / $len : $id")
+        log.status("Getting ${index+1}/$len AppId $id")
+        
         if (File(outputPath + id + ".apk").exists()) {
-            println("Already downloaded")
+            log.info("Already downloaded AppId $id")
             return@forEachIndexed
         }
 
-        val query = getDownloadQuery(id, authData)
+        val query = getDownloadQuery(id, authData, log)
         if (query == null) {
-            log("NOTFOUND $id")
-            println("Could not found $id")
+            log.warning("NOTFOUND AppId $id")
         } else if (!query.isFree) {
-            log("NOTFREE $id")
-            println("$id is not free")
+            log.warning("NOTFREE AppId $id")
         } else {
-            downloadFrom(query, outputPath)
+            try {
+                downloadFrom(query, outputPath)
+                log.success("Downloaded AppId $id")
+            } catch (e: Exception) {
+                log.dlError("Could not download AppId $id")
+            }
         }
     }
 
-    println("Finished")
+    log.status("=====Finished=====")
 }
