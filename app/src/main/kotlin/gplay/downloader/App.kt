@@ -11,23 +11,23 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
 
-data class DownloadQuery(val url: String, val appid: String, val isFree: Boolean)
+data class DownloadQuery(val url: String, val appId: String, val isFree: Boolean)
 
-data class AuthConfig(val email: String, val aas_token: String)
+data class AuthConfig(val email: String, val aasToken: String)
 
-fun get_download_query(appid: String, authData: AuthData): DownloadQuery? {
+fun getDownloadQuery(appId: String, authData: AuthData): DownloadQuery? {
     var url: String = ""
     try {
-        val app = AppDetailsHelper(authData).getAppByPackageName(appid)
+        val app = AppDetailsHelper(authData).getAppByPackageName(appId)
         if (!app.isFree) {
-            return DownloadQuery("", appid, false)
+            return DownloadQuery("", appId, false)
         }
 
         val files =
                 PurchaseHelper(authData).purchase(app.packageName, app.versionCode, app.offerType)
 
         for (file in files) {
-            if (file.name.startsWith(appid)) {
+            if (file.name.startsWith(appId)) {
                 url = file.url
                 println(file.name)
             }
@@ -39,11 +39,11 @@ fun get_download_query(appid: String, authData: AuthData): DownloadQuery? {
 
     return when (url) {
         "" -> null
-        else -> DownloadQuery(url, appid, true)
+        else -> DownloadQuery(url, appId, true)
     }
 }
 
-fun read_auth_config(): AuthConfig {
+fun readAuthConfig(): AuthConfig {
     try {
         // Read first 2 lines of authconfig.txt
         val bufferedReader: BufferedReader = File("authconfig.txt").bufferedReader()
@@ -66,7 +66,7 @@ fun read_auth_config(): AuthConfig {
     return AuthConfig("", "")
 }
 
-fun read_appids(path: String): List<String> {
+fun readAppIds(path: String): List<String> {
     val ls: MutableList<String> = mutableListOf()
     val inputStream: InputStream = File(path).inputStream()
 
@@ -79,8 +79,8 @@ fun read_appids(path: String): List<String> {
     return ls
 }
 
-fun download_from(query: DownloadQuery, output_path: String) {
-    val path = output_path + query.appid + ".apk"
+fun downloadFrom(query: DownloadQuery, outputPath: String) {
+    val path = outputPath + query.appId + ".apk"
     URL(query.url).openStream().use { Files.copy(it, Paths.get(path)) }
 }
 
@@ -95,26 +95,26 @@ fun main(args: Array<String>) {
     }
 
     // Create output dir
-    val output_path = if (args[1].endsWith('/')) args[1] else args[1] + "/"
-    File(output_path).mkdir()
+    val outputPath = if (args[1].endsWith('/')) args[1] else args[1] + "/"
+    File(outputPath).mkdir()
 
     // Read app ids
-    val appids = read_appids(args[0])
+    val appids = readAppIds(args[0])
 
     // Read auth configuration and login
-    val (email, aas_token) = read_auth_config()
-    val authData = AuthHelper.build(email, aas_token)
+    val (email, aasToken) = readAuthConfig()
+    val authData = AuthHelper.build(email, aasToken)
 
     // Download each app
     val len = appids.size
     appids.forEachIndexed { index, id ->
         println("Getting $index / $len : $id")
-        if (File(output_path + id + ".apk").exists()) {
+        if (File(outputPath + id + ".apk").exists()) {
             println("Already downloaded")
             return@forEachIndexed
         }
 
-        val query = get_download_query(id, authData)
+        val query = getDownloadQuery(id, authData)
         if (query == null) {
             log("NOTFOUND $id")
             println("Could not found $id")
@@ -122,7 +122,7 @@ fun main(args: Array<String>) {
             log("NOTFREE $id")
             println("$id is not free")
         } else {
-            download_from(query, output_path)
+            downloadFrom(query, outputPath)
         }
     }
 
