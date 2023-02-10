@@ -4,9 +4,39 @@
 package gplay.downloader
 
 import kotlin.test.Test
-import kotlin.test.assertNotNull
+import kotlin.test.assertEquals
+import java.io.File
 
 class AppTest {
-    @Test fun appHasAGreeting() {
+    @Test fun canReadAuthConfig() {
+        val email = "someone@gmail.com"
+        val aasToken = "some_random_token"
+        val file = File("authconfig.txt")
+        file.writeText("$email\n$aasToken")
+
+        val config = readAuthConfig()
+        assertEquals(config.email, email)
+        assertEquals(config.aasToken, aasToken)
+        file.delete()
+    }
+
+    @Test fun canReadAppIds() {
+        val appIds = listOf(
+            "com.github.android",
+            "com.whatsapp",
+            "somerandromappid",
+        )
+
+        val file = File("appids_test.txt")
+        val txt = appIds.joinToString(separator="\n")
+        file.writeText(txt)
+
+        val result = readAppIds(file.path)
+        assertEquals(result.size, appIds.size)
+
+        for ((index, item) in result.withIndex()) {
+            assertEquals(item, appIds[index])
+        }
+        file.delete()
     }
 }
