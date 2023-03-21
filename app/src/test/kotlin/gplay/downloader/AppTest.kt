@@ -12,9 +12,9 @@ class AppTest {
         val email = "someone@gmail.com"
         val aasToken = "some_random_token"
         val file = File("authconfig.txt")
-        file.writeText("$email\n$aasToken")
+        file.writeText("$email $aasToken")
 
-        val config = readAuthConfig()
+        val config = ConfigManager("authconfig.txt").getNextConfig().authConfig
         assertEquals(config.email, email)
         assertEquals(config.aasToken, aasToken)
         file.delete()
