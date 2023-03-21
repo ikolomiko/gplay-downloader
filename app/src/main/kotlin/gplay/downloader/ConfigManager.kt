@@ -13,13 +13,10 @@ data class ProxyConfig(
 
 data class DownloaderConfig(val authConfig: AuthConfig, var proxyConfig: ProxyConfig? = null)
 
-class ConfigManager(val authConfigPath: String, val proxyConfigPath: String? = null) {
+class ConfigManager(val log: Logger, val authConfigPath: String, val proxyConfigPath: String? = null) {
     private val useProxy: Boolean
     private var configIndex: Int
     private val downloaderConfigs: List<DownloaderConfig>
-
-    /// TODO convert println statements to logger statements
-    /// TODO actually make use of custom exception messages
 
     init {
         useProxy = !proxyConfigPath.isNullOrEmpty()
@@ -28,12 +25,14 @@ class ConfigManager(val authConfigPath: String, val proxyConfigPath: String? = n
         val proxyConfigs = if (useProxy) readProxyConfigFile() else emptyList()
 
         if (authConfigs.size < 1) {
-            println("Error: No auth configs found")
+            log.error("ConfigManager error: No auth configs found")
+            log.status("=====Quitting=====")
             System.exit(1)
         }
 
         if (useProxy && proxyConfigs.size < 1) {
-            println("Error: No proxy configs found")
+            log.error("ConfigManager error: No proxy configs found")
+            log.status("=====Quitting=====")
             System.exit(1)
         }
 
@@ -71,7 +70,12 @@ class ConfigManager(val authConfigPath: String, val proxyConfigPath: String? = n
                 list.add(config)
             }
         } catch (e: Exception) {
-            println("Error: invalid auth config file")
+            log.error("ConfigManager error: invalid auth config file")
+            val details = e.message.orEmpty()
+            if (details.isNotEmpty()) {
+                log.error(details)
+            }
+            log.status("=====Quitting=====")
             System.exit(1)
         }
 
@@ -109,7 +113,12 @@ class ConfigManager(val authConfigPath: String, val proxyConfigPath: String? = n
                 list.add(config)
             }
         } catch (e: Exception) {
-            println("Error: invalid proxy config file")
+            log.error("ConfigManager error: invalid proxy config file")
+            val details = e.message.orEmpty()
+            if (details.isNotEmpty()) {
+                log.error(details)
+            }
+            log.status("=====Quitting=====")
             System.exit(1)
         }
 
