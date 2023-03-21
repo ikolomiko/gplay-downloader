@@ -17,12 +17,12 @@ fun readAppIds(path: String): List<String> {
 }
 
 fun main(args: Array<String>) {
-    val log = Logger(saveToFile = true, printToScreen = true, coloredOutput = true)
-
     if (args.size != 2) {
         println("usage: gplay-downloader <appids file> <output path>")
         System.exit(2)
     }
+
+    val log = Logger(saveToFile = true, printToScreen = true, coloredOutput = true)
 
     // Create output dir
     val outputPath = if (args[1].endsWith('/')) args[1] else args[1] + "/"
@@ -35,7 +35,7 @@ fun main(args: Array<String>) {
 
     // Read auth configuration and login
     /// TODO replace placeholders below
-    val configManager = ConfigManager("authConfigPath", "proxyConfigPath")
+    val configManager = ConfigManager(log, "authConfigPath", "proxyConfigPath")
 
     log.status("Initialized config manager")
 

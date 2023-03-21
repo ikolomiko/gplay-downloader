@@ -14,7 +14,8 @@ class AppTest {
         val file = File("authconfig.txt")
         file.writeText("$email $aasToken")
 
-        val config = ConfigManager("authconfig.txt").getNextConfig().authConfig
+        val log = Logger(saveToFile = false, printToScreen = true, coloredOutput = true)
+        val config = ConfigManager(log, "authconfig.txt").getNextConfig().authConfig
         assertEquals(config.email, email)
         assertEquals(config.aasToken, aasToken)
         file.delete()
