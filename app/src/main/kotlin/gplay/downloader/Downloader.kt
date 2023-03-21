@@ -36,7 +36,7 @@ class Downloader(
                 }
             }
         } catch (e: Exception) {
-            log.dqError("getQuery error at AppId $appId " + e.toString())
+            log.error("getQuery error at AppId $appId " + e.toString())
             return null
         }
 
@@ -99,7 +99,7 @@ class Downloader(
                     downloadQuery(query)
                     log.success("Downloaded AppId $id")
                 } catch (e: Exception) {
-                    log.dlError("Could not download AppId $id")
+                    log.error("DownloadError: Could not download AppId $id")
                 }
             }
         }

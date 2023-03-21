@@ -13,8 +13,7 @@ class Logger(
         STATUS,
         SUCCESS,
         WARNING,
-        DQERROR,
-        DLERROR,
+        ERROR,
     }
 
     private val ColorCode: Array<String> =
@@ -23,8 +22,7 @@ class Logger(
                     "\u001b[36m", // cyan - status
                     "\u001b[32m", // green - success
                     "\u001b[33m", // yellow - warning
-                    "\u001b[35m", // purple - dqerror
-                    "\u001b[31m", // red - dlerror
+                    "\u001b[31m", // red - error
             )
 
     fun color(text: String, level: LogLevel = LogLevel.INFO): String {
@@ -52,6 +50,5 @@ class Logger(
     public fun status(text: String) = log(text, LogLevel.STATUS)
     public fun success(text: String) = log(text, LogLevel.SUCCESS)
     public fun warning(text: String) = log(text, LogLevel.WARNING)
-    public fun dqError(text: String) = log(text, LogLevel.DQERROR)
-    public fun dlError(text: String) = log(text, LogLevel.DLERROR)
+    public fun error(text: String) = log(text, LogLevel.ERROR)
 }
