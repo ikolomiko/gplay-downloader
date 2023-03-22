@@ -101,7 +101,7 @@ class ConfigManager(val log: Logger, val authConfigPath: String, val proxyConfig
 
                 // Check if the line consists of 2 or 4 words
                 val tokens = line.trim().split(" ")
-                if (tokens.size != 2 || tokens.size != 4) {
+                if (tokens.size != 2 && tokens.size != 4) {
                     throw Exception("Invalid proxy config file structure")
                 }
 
