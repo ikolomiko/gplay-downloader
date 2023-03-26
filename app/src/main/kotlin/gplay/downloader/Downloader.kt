@@ -1,6 +1,7 @@
 package gplay.downloader
 
 import com.aurora.gplayapi.data.models.AuthData
+import com.aurora.gplayapi.data.models.File as ApkFile
 import com.aurora.gplayapi.helpers.AppDetailsHelper
 import com.aurora.gplayapi.helpers.AuthHelper
 import com.aurora.gplayapi.helpers.PurchaseHelper
@@ -13,42 +14,44 @@ class Downloader(
         val log: Logger,
         val outputPath: String,
         val configManager: ConfigManager,
+        val singleApk: Boolean
 ) {
-    data class Query(val url: String, val appId: String, val isFree: Boolean)
+    data class Query(val files: List<ApkFile>, val isFree: Boolean)
 
-    private fun getQuery(appId: String, authData: AuthData, log: Logger): Query? {
-        var url: String = ""
+    private fun getQuery(appId: String, authData: AuthData, log: Logger): Query {
+        var files: List<ApkFile>
         try {
             val app = AppDetailsHelper(authData).getAppByPackageName(appId)
             if (!app.isFree) {
-                return Query("", appId, false)
+                return Query(emptyList(), false)
             }
 
-            val files =
+            files =
                     PurchaseHelper(authData)
                             .purchase(app.packageName, app.versionCode, app.offerType)
 
-            for (file in files) {
-                if (file.name.startsWith(appId)) {
-                    url = file.url
-                    println("Chosen file name: " + file.name)
-                    break
+            if (singleApk) {
+                for (file in files) {
+                    if (file.name.startsWith(appId)) {
+                        files = listOf(file)
+                        log.info("Chosen file name: " + file.name)
+                        break
+                    }
                 }
             }
         } catch (e: Exception) {
             log.error("getQuery error at AppId $appId " + e.toString())
-            return null
+            files = emptyList()
         }
 
-        return when (url) {
-            "" -> null
-            else -> Query(url, appId, true)
-        }
+        return Query(files, true)
     }
 
     private fun downloadQuery(query: Query) {
-        val path = outputPath + query.appId + ".apk"
-        URL(query.url).openStream().use { Files.copy(it, Paths.get(path)) }
+        for (file in query.files) {
+            val path = outputPath + file.name
+            URL(file.url).openStream().use { Files.copy(it, Paths.get(path)) }
+        }
     }
 
     private fun applyProxyConfig(proxyConfig: ProxyConfig) {
@@ -90,10 +93,10 @@ class Downloader(
 
             // Try to find the app and download
             val query = getQuery(id, authData, log)
-            if (query == null) {
-                log.warning("NOTFOUND AppId $id")
-            } else if (!query.isFree) {
+            if (!query.isFree) {
                 log.warning("NOTFREE AppId $id")
+            } else if (query.files.isNullOrEmpty()) {
+                log.warning("NOTFOUND AppId $id")
             } else {
                 try {
                     downloadQuery(query)
