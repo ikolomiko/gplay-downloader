@@ -47,7 +47,7 @@ fun main(args: Array<String>) {
             .addArgument("-s", "--single-apk")
             .action(Arguments.storeTrue())
             .required(false)
-            .help("download only the main APK file")
+            .help("download only the main APK file if set (optional)")
 
     var appIdsPath: String = ""
     var authConfigPath: String = ""
