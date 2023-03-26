@@ -47,10 +47,19 @@ class Downloader(
         return Query(files, true)
     }
 
-    private fun downloadQuery(query: Query) {
+    private fun downloadQuery(query: Query, appId: String) {
+        var outputDir = outputPath
+
+        // Group all APKs of the same app into a directory if the 'single APK' option was not set
+        // This step is necessary because many of the split APKs share the same names
+        if (!singleApk) {
+            outputDir += "$appId/"
+            File(outputDir).mkdirs()
+        }
+
         for (file in query.files) {
-            val path = outputPath + file.name
-            URL(file.url).openStream().use { Files.copy(it, Paths.get(path)) }
+            val outputFile = outputDir + file.name
+            URL(file.url).openStream().use { Files.copy(it, Paths.get(outputFile)) }
         }
     }
 
@@ -99,7 +108,7 @@ class Downloader(
                 log.warning("NOTFOUND AppId $id")
             } else {
                 try {
-                    downloadQuery(query)
+                    downloadQuery(query, id)
                     log.success("Downloaded AppId $id")
                 } catch (e: Exception) {
                     log.error("DownloadError: Could not download AppId $id")
