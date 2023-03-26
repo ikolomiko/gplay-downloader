@@ -3,6 +3,7 @@ package gplay.downloader
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStream
+import net.sourceforge.argparse4j.impl.Arguments
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 
@@ -23,30 +24,36 @@ fun main(args: Array<String>) {
     // Create argument parser
     val argParser = ArgumentParsers.newArgumentParser("gplay-downloader")
     argParser
-            .addArgument("-a")
+            .addArgument("-a", "--app-ids")
             .dest("appids_path")
             .required(true)
             .help("path to the file containing app ids")
     argParser
-            .addArgument("-c")
+            .addArgument("-c", "--auth-config")
             .dest("authconfig_path")
             .required(true)
             .help("path to the auth config file")
     argParser
-            .addArgument("-o")
+            .addArgument("-o", "--output")
             .dest("output_path")
             .required(true)
             .help("the path where the apps will be downloaded to")
     argParser
-            .addArgument("-p")
+            .addArgument("-p", "--proxy-config")
             .dest("proxyconfig_path")
             .required(false)
             .help("path to the proxy config file (optional)")
+    argParser
+            .addArgument("-s", "--single-apk")
+            .action(Arguments.storeTrue())
+            .required(false)
+            .help("download only the main APK file")
 
     var appIdsPath: String = ""
     var authConfigPath: String = ""
     var outputPath: String = ""
     var proxyConfigPath: String? = null
+    var singleApk: Boolean = false
 
     // Try to assign values to variables from parsed arguments
     try {
@@ -55,6 +62,7 @@ fun main(args: Array<String>) {
         authConfigPath = namespace.getString("authconfig_path")
         outputPath = namespace.getString("output_path")
         proxyConfigPath = namespace.getString("proxyconfig_path")
+        singleApk = namespace.getBoolean("single_apk")
     } catch (e: ArgumentParserException) {
         argParser.handleError(e)
         System.exit(2)
@@ -92,7 +100,7 @@ fun main(args: Array<String>) {
     log.status("Initialized config manager")
 
     // Download each app
-    val downloader = Downloader(log, outputPath, configManager)
+    val downloader = Downloader(log, outputPath, configManager, singleApk)
     downloader.downloadAll(appIds)
 
     log.status("=====Finished=====")
