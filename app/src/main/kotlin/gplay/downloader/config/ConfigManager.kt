@@ -44,10 +44,10 @@ class ConfigManager(
     public fun getNextConfig(): DownloaderConfig {
         configIndex = (configIndex + 1) % downloaderConfigs.size
 
-        // Swith to the next spoof device after every 5 apps
-        if (configIndex % 5 == 0)
-            SpoofProvider.nextSpoofDeviceProperties()
-            
+        // Swith to the next spoof device everytime this method
+        // gets called (after every 3 apps)
+        SpoofProvider.nextSpoofDeviceProperties()
+
         return downloaderConfigs[configIndex]
     }
 
