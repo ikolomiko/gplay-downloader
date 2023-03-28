@@ -1,19 +1,15 @@
-package gplay.downloader
+package gplay.downloader.config
 
+import gplay.downloader.Logger
+import gplay.downloader.SpoofProvider
 import java.io.File
 
-data class AuthConfig(val email: String, val aasToken: String)
-
-data class ProxyConfig(
-        val hostname: String,
-        val port: String,
-        var user: String? = null,
-        var password: String? = null,
-)
-
-data class DownloaderConfig(val authConfig: AuthConfig, var proxyConfig: ProxyConfig? = null)
-
-class ConfigManager(val log: Logger, val authConfigPath: String, val proxyConfigPath: String? = null) {
+class ConfigManager(
+        val log: Logger,
+        val authConfigPath: String,
+        val proxyConfigPath: String? = null,
+        val useAuroraDispenserBackend: Boolean = false
+) {
     private val useProxy: Boolean
     private var configIndex: Int
     private val downloaderConfigs: List<DownloaderConfig>
@@ -21,7 +17,13 @@ class ConfigManager(val log: Logger, val authConfigPath: String, val proxyConfig
     init {
         useProxy = !proxyConfigPath.isNullOrEmpty()
         configIndex = -1
-        val authConfigs = readAuthConfigFile()
+
+        val authConfigs =
+                if (useAuroraDispenserBackend) {
+                    generateSequence { AuroraAuthConfig() }.take(10).toList()
+                } else {
+                    readAuthConfigFile()
+                }
         val proxyConfigs = if (useProxy) readProxyConfigFile() else emptyList()
 
         if (authConfigs.size < 1) {
@@ -41,11 +43,16 @@ class ConfigManager(val log: Logger, val authConfigPath: String, val proxyConfig
 
     public fun getNextConfig(): DownloaderConfig {
         configIndex = (configIndex + 1) % downloaderConfigs.size
+
+        // Swith to the next spoof device everytime this method
+        // gets called (after every 3 apps)
+        SpoofProvider.nextSpoofDeviceProperties()
+
         return downloaderConfigs[configIndex]
     }
 
-    private fun readAuthConfigFile(): List<AuthConfig> {
-        val list: MutableList<AuthConfig> = mutableListOf()
+    private fun readAuthConfigFile(): List<RegularAuthConfig> {
+        val list: MutableList<RegularAuthConfig> = mutableListOf()
         try {
             // Check if the file exists
             val configFile: File = File(authConfigPath)
@@ -66,7 +73,7 @@ class ConfigManager(val log: Logger, val authConfigPath: String, val proxyConfig
                     throw Exception("Invalid auth config file structure")
                 }
 
-                val config = AuthConfig(tokens[0], tokens[1])
+                val config = RegularAuthConfig(tokens[0], tokens[1])
                 list.add(config)
             }
         } catch (e: Exception) {
@@ -91,7 +98,7 @@ class ConfigManager(val log: Logger, val authConfigPath: String, val proxyConfig
                 throw Exception("Given proxy config file does not exist")
             }
 
-            // Proxy config line format: 
+            // Proxy config line format:
             // <hostname> <password> <user (optional)> <password (optional)>
             for (line in configFile.readLines()) {
                 // Check for empty line
@@ -126,7 +133,7 @@ class ConfigManager(val log: Logger, val authConfigPath: String, val proxyConfig
     }
 
     private fun generateDownloaderConfigs(
-            authConfigs: List<AuthConfig>,
+            authConfigs: List<IAuthConfig>,
             proxyConfigs: List<ProxyConfig>
     ): List<DownloaderConfig> {
         val list: MutableList<DownloaderConfig> = mutableListOf()

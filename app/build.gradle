@@ -28,12 +28,18 @@ dependencies {
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:31.1-jre'
 
+    // Patched version of GPlayApi which supports proxies
+    api "com.gitlab.ikolomiko:gplayapi:cd73658b08"
 
-    api "com.gitlab.AuroraOSS:gplayapi:0e224071f3"
     implementation "com.google.protobuf:protobuf-java:3.14.0"
 
     implementation 'net.sourceforge.argparse4j:argparse4j:0.2.0'
 
+    // Gson
+    implementation "com.google.code.gson:gson:2.9.0"
+    
+    // Okhttp3
+    implementation "com.squareup.okhttp3:okhttp:4.9.3"
 }
 
 application {
@@ -42,14 +48,15 @@ application {
 }
 
 jar {
-  manifest {
-    attributes 'Main-Class': 'gplay.downloader.AppKt'
-  }
-  archiveFileName.set('gplay-downloader.jar')
+    manifest {
+        attributes 'Main-Class': 'gplay.downloader.AppKt'
+    }
+    archiveFileName.set('gplay-downloader.jar')
 }
 
 shadowJar{  
     archiveFileName = "gplay-downloader-with-dependencies.jar"
+    exclude '*.properties'
 }
 
 tasks.named('test') {

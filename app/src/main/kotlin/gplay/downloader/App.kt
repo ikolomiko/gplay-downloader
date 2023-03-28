@@ -1,5 +1,6 @@
 package gplay.downloader
 
+import gplay.downloader.config.ConfigManager
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -31,7 +32,7 @@ fun main(args: Array<String>) {
     argParser
             .addArgument("-c", "--auth-config")
             .dest("authconfig_path")
-            .required(true)
+            .required(!args.contains("-d") && !args.contains("--aurora-dispenser"))
             .help("path to the auth config file")
     argParser
             .addArgument("-o", "--output")
@@ -48,12 +49,18 @@ fun main(args: Array<String>) {
             .action(Arguments.storeTrue())
             .required(false)
             .help("download only the main APK file if set (optional)")
+    argParser
+            .addArgument("-d", "--aurora-dispenser")
+            .action(Arguments.storeTrue())
+            .required(false)
+            .help("use the Aurora dispenser backend (optional)")
 
     var appIdsPath: String = ""
-    var authConfigPath: String = ""
+    var authConfigPath: String? = ""
     var outputPath: String = ""
     var proxyConfigPath: String? = null
     var singleApk: Boolean = false
+    var useAuroraDispenserBackend: Boolean = false
 
     // Try to assign values to variables from parsed arguments
     try {
@@ -63,6 +70,7 @@ fun main(args: Array<String>) {
         outputPath = namespace.getString("output_path")
         proxyConfigPath = namespace.getString("proxyconfig_path")
         singleApk = namespace.getBoolean("single_apk")
+        useAuroraDispenserBackend = namespace.getBoolean("aurora_dispenser")
     } catch (e: ArgumentParserException) {
         argParser.handleError(e)
         System.exit(2)
@@ -71,7 +79,7 @@ fun main(args: Array<String>) {
     try {
         // Check if the given files exist
         if (!File(appIdsPath).isFile()) throw FileNotFoundException(appIdsPath)
-        if (!File(authConfigPath).isFile()) throw FileNotFoundException(authConfigPath)
+        if (!useAuroraDispenserBackend && !File(authConfigPath).isFile()) throw FileNotFoundException(authConfigPath)
         if (proxyConfigPath != null && !File(proxyConfigPath).isFile())
                 throw FileNotFoundException(proxyConfigPath)
 
@@ -95,7 +103,8 @@ fun main(args: Array<String>) {
     log.status("=====Initialized=====")
 
     // Read auth configuration and login
-    val configManager = ConfigManager(log, authConfigPath, proxyConfigPath)
+    val configManager =
+            ConfigManager(log, authConfigPath.orEmpty(), proxyConfigPath, useAuroraDispenserBackend)
 
     log.status("Initialized config manager")
 
