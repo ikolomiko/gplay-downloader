@@ -1,4 +1,4 @@
-package gplay.downloader.aurora
+package gplay.downloader
 
 import com.aurora.gplayapi.data.models.AuthData
 import com.google.gson.Gson

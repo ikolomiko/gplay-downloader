@@ -1,4 +1,4 @@
-package gplay.downloader.aurora
+package gplay.downloader
 
 import java.net.JarURLConnection
 import java.util.Locale

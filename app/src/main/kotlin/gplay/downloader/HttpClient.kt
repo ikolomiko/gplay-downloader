@@ -1,4 +1,4 @@
-package gplay.downloader.aurora
+package gplay.downloader
 
 import com.aurora.gplayapi.data.models.PlayResponse
 import com.aurora.gplayapi.network.OkHttpClient
