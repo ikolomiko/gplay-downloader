@@ -1,2 +1,3 @@
-youremail@gmail.com
-aas_token_of_this_email
+youremail@gmail.com aas_token_of_this_email
+another@gmail.com aas_token_of_that_email
+other@gmail.com aas_token_of_this_other_email
