@@ -56,4 +56,8 @@ object SpoofProvider {
     fun getSpoofDeviceProperties(): Properties {
         return deviceSpoofProperties
     }
+
+    fun getDeviceCount(): Int {
+        return deviceFilenames.size
+    }
 }
