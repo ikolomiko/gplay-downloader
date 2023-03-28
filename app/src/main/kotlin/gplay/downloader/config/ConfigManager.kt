@@ -1,6 +1,7 @@
 package gplay.downloader.config
 
 import gplay.downloader.Logger
+import gplay.downloader.SpoofProvider
 import java.io.File
 
 class ConfigManager(
@@ -42,6 +43,11 @@ class ConfigManager(
 
     public fun getNextConfig(): DownloaderConfig {
         configIndex = (configIndex + 1) % downloaderConfigs.size
+
+        // Swith to the next spoof device after every 5 apps
+        if (configIndex % 5 == 0)
+            SpoofProvider.nextSpoofDeviceProperties()
+            
         return downloaderConfigs[configIndex]
     }
 
