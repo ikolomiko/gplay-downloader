@@ -1,0 +1,19 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: gplay-downloader
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: İlker
+    family-names: Avcı
+    email: citation@ikolomiko.com
+    orcid: 'https://orcid.org/0009-0007-5215-2478'
+repository-code: 'https://github.com/ikolomiko/gplay-downloader'
+abstract: >-
+  A simple Google Play Store downloader based on AuroraOSS
+  GPlayApi
+license: GPL-3.0-or-later
