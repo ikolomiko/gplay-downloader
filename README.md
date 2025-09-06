@@ -22,7 +22,7 @@ This project has been cited in the following academic papers:
 - **Author:** Wilco van Beijnum
 - **Published as:** Master's Thesis, University of Twente
 - **Year:** 2023
-- [Link](https://essay.utwente.nl/95578/)
+- [Link](https://purl.utwente.nl/essays/95578)
 
 ### SoK: Hardening Techniques in the Mobile Ecosystem — Are We There Yet?
 - **Authors:** Magdalena Steinböck, Jens Troost, Wilco van Beijnum, Jan Seredynski, Herbert Bos, Martina Lindorfer, Andrea Continella
